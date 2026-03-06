@@ -13,6 +13,16 @@ SYSTEM_PROMPT = (
 )
 
 
+def _strip_markdown_code_fences(text: str) -> str:
+    text = text.strip()
+    if not text.startswith("```"):
+        return text
+    lines = text.splitlines()
+    if len(lines) >= 2 and lines[-1].strip() == "```":
+        return "\n".join(lines[1:-1]).strip()
+    return text
+
+
 def summarize_bucket(client: OpenAI, model: str, bucket: str, articles: list[Article]) -> BucketSummary:
     payload = [
         {
@@ -52,5 +62,10 @@ Articles:
         ],
     )
 
-    text = getattr(response, "output_text", "").strip()
-    return BucketSummary.model_validate_json(text)
+    raw_text = getattr(response, "output_text", "").strip()
+    text = _strip_markdown_code_fences(raw_text)
+    try:
+        return BucketSummary.model_validate_json(text)
+    except Exception:
+        print(raw_text)
+        raise
