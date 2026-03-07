@@ -21,6 +21,8 @@ class Settings:
     themes: list[str] = field(default_factory=lambda: _csv("THEMES", "robotics,ai,space"))
     days_back: int = int(os.getenv("DAYS_BACK", "2"))
     max_articles_per_bucket: int = int(os.getenv("MAX_ARTICLES_PER_BUCKET", "8"))
+    telegram_bot_token: str = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    telegram_chat_id: str = os.getenv("TELEGRAM_CHAT_ID", "")
 
 
 settings = Settings()

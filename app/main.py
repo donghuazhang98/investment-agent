@@ -6,6 +6,7 @@ from app.config import settings
 from app.fetchers.news import fetch_news
 from app.llm import summarize_bucket
 from app.outputs.markdown import write_report
+from app.outputs.telegram import send_report_to_telegram
 from app.processors.classify import classify_articles
 from app.processors.dedupe import dedupe_articles
 
@@ -45,6 +46,12 @@ def main() -> None:
 
     report_path = write_report(summaries)
     print(f"Generated report: {report_path}")
+
+    send_report_to_telegram(
+        report_path=report_path,
+        bot_token=settings.telegram_bot_token,
+        chat_id=settings.telegram_chat_id,
+    )
 
 
 if __name__ == "__main__":

@@ -12,16 +12,18 @@ SYSTEM_PROMPT = (
     "Do not provide personalized financial advice. Output valid JSON only."
 )
 
-
-def _strip_markdown_code_fences(text: str) -> str:
+def _clean_json_text(text: str) -> str:
     text = text.strip()
-    if not text.startswith("```"):
-        return text
-    lines = text.splitlines()
-    if len(lines) >= 2 and lines[-1].strip() == "```":
-        return "\n".join(lines[1:-1]).strip()
-    return text
 
+    if text.startswith("```json"):
+        text = text[len("```json"):].strip()
+    elif text.startswith("```"):
+        text = text[len("```"):].strip()
+
+    if text.endswith("```"):
+        text = text[:-3].strip()
+
+    return text
 
 def summarize_bucket(client: OpenAI, model: str, bucket: str, articles: list[Article]) -> BucketSummary:
     payload = [
@@ -62,10 +64,6 @@ Articles:
         ],
     )
 
-    raw_text = getattr(response, "output_text", "").strip()
-    text = _strip_markdown_code_fences(raw_text)
-    try:
-        return BucketSummary.model_validate_json(text)
-    except Exception:
-        print(raw_text)
-        raise
+    text = getattr(response, "output_text", "").strip()
+    text = _clean_json_text(text)
+    return BucketSummary.model_validate_json(text)

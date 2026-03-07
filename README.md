@@ -30,6 +30,20 @@ cp .env.example .env
 python -m app.main
 ```
 
+## Telegram delivery
+
+Add these to `.env` to send each generated report to Telegram:
+
+```env
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+TELEGRAM_CHAT_ID=your_telegram_chat_id
+```
+
+Behavior:
+- If the report is short (<= 4000 chars), it is sent as a text message
+- If it is longer, the markdown file is sent as a document
+- If Telegram vars are missing, delivery is skipped without crashing
+
 ## Example output
 
 ```markdown
