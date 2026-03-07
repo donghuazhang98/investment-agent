@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from datetime import date
+
 from openai import OpenAI
 
 from app.config import settings
+from app.db import init_db, save_articles, save_report
 from app.fetchers.news import fetch_news
 from app.llm import summarize_bucket
 from app.outputs.markdown import write_report
@@ -17,6 +20,8 @@ def main() -> None:
     if not settings.newsapi_api_key:
         raise SystemExit("NEWSAPI_API_KEY is missing")
 
+    init_db()
+
     client = OpenAI(api_key=settings.openai_api_key)
     queries = settings.watchlist + settings.themes
 
@@ -25,6 +30,9 @@ def main() -> None:
         queries=queries,
         days_back=settings.days_back,
     )
+    inserted_articles = save_articles(articles)
+    print(f"Persisted articles: {inserted_articles} new rows")
+
     articles = dedupe_articles(articles)
     buckets = classify_articles(articles)
 
@@ -46,6 +54,13 @@ def main() -> None:
 
     report_path = write_report(summaries)
     print(f"Generated report: {report_path}")
+
+    report_id = save_report(
+        report_date=date.today().isoformat(),
+        report_path=report_path,
+        summaries=summaries,
+    )
+    print(f"Persisted report metadata: id={report_id}")
 
     send_report_to_telegram(
         report_path=report_path,

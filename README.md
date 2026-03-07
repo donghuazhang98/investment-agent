@@ -8,6 +8,7 @@ A minimal Python MVP that pulls news for a small watchlist, groups it into ticke
 - Buckets articles by ticker/theme using simple keyword rules
 - Summarizes each bucket with an OpenAI model
 - Writes a Markdown report to `reports/YYYY-MM-DD.md`
+- Stores fetched articles and generated summaries in SQLite (`data/investment_agent.db`)
 
 ## Quick start
 
@@ -29,6 +30,13 @@ cp .env.example .env
 ```bash
 python -m app.main
 ```
+
+## Database
+
+The app creates a local SQLite database at `data/investment_agent.db` and persists:
+- fetched articles (deduplicated by URL and normalized title)
+- report metadata (`report_date`, path, summary count)
+- per-bucket generated summaries
 
 ## Telegram delivery
 
